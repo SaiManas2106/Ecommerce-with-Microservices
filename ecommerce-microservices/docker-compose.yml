@@ -1,0 +1,105 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    networks:
+      - ecommerce-net
+
+  kafka:
+    image: bitnami/kafka:3.9
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - ecommerce-net
+
+  discovery-server:
+    build: ./discovery-server
+    depends_on:
+      - kafka
+    ports:
+      - "8761:8761"
+    networks:
+      - ecommerce-net
+
+  config-server:
+    build: ./config-server
+    depends_on:
+      - discovery-server
+    ports:
+      - "8888:8888"
+    networks:
+      - ecommerce-net
+
+  product-service:
+    build: ./product-service
+    depends_on:
+      - discovery-server
+      - kafka
+      - config-server
+    ports:
+      - "8081:8081"
+    networks:
+      - ecommerce-net
+
+  cart-service:
+    build: ./cart-service
+    depends_on:
+      - discovery-server
+      - config-server
+    ports:
+      - "8082:8082"
+    networks:
+      - ecommerce-net
+
+  order-service:
+    build: ./order-service
+    depends_on:
+      - discovery-server
+      - kafka
+      - config-server
+    ports:
+      - "8083:8083"
+    networks:
+      - ecommerce-net
+
+  payment-service:
+    build: ./payment-service
+    depends_on:
+      - discovery-server
+      - kafka
+      - config-server
+    ports:
+      - "8084:8084"
+    networks:
+      - ecommerce-net
+
+  api-gateway:
+    build: ./api-gateway
+    depends_on:
+      - discovery-server
+      - config-server
+      - product-service
+      - cart-service
+      - order-service
+      - payment-service
+    ports:
+      - "8080:8080"
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
+    driver: bridge
