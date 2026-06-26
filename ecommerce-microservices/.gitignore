@@ -8,6 +8,8 @@ spring.log
 *.jar
 *.war
 *.ear
+node_modules/
+dist/
 hs_err_pid*
 .DS_Store
 /.settings/

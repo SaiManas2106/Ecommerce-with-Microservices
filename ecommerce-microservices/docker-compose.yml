@@ -110,6 +110,15 @@ services:
     networks:
       - ecommerce-net
 
+  frontend:
+    build: ./frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "5173:80"
+    networks:
+      - ecommerce-net
+
 networks:
   ecommerce-net:
     driver: bridge
