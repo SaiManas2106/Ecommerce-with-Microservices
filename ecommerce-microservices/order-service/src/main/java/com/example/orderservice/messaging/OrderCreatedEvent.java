@@ -13,6 +13,8 @@ import java.time.Instant;
 public class OrderCreatedEvent {
 
     private String eventId;
+    private String eventType;
+    private String correlationId;
     private Long orderId;
     private String userId;
     private BigDecimal totalAmount;

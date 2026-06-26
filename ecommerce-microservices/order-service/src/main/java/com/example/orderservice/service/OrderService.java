@@ -88,6 +88,8 @@ public class OrderService {
     private void publishCreated(Order order) {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
+                "ORDER_CREATED",
+                UUID.randomUUID().toString(),
                 order.getId(),
                 order.getUserId(),
                 order.getTotalAmount(),
