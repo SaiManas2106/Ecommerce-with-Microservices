@@ -55,12 +55,13 @@ public class CartController {
     @DeleteMapping("/{userId}/items")
     @Operation(summary = "Clear a user's cart")
     public ResponseEntity<Void> clearCart(@PathVariable String userId) {
-        return cartRepository.findByUserId(userId)
-                .map(cart -> {
-                    cart.getItems().clear();
-                    cartRepository.save(cart);
-                    return ResponseEntity.noContent().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Cart cart = cartRepository.findByUserId(userId).orElse(null);
+        if (cart == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        cart.getItems().clear();
+        cartRepository.save(cart);
+        return ResponseEntity.noContent().build();
     }
 }

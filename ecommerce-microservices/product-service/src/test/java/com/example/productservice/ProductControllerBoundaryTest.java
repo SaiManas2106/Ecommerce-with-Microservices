@@ -20,12 +20,14 @@ class ProductControllerBoundaryTest {
 
     @Test
     void createProduct_validRequest_returnsCreated() throws Exception {
-        String json = """{
+        String json = """
+        {
           "name": "Laptop",
           "description": "Test product",
           "price": 999.99,
           "stock": 10
-        }""";
+        }
+        """;
 
         mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
