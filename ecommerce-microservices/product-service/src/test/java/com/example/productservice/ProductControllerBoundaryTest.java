@@ -22,7 +22,9 @@ class ProductControllerBoundaryTest {
     void createProduct_validRequest_returnsCreated() throws Exception {
         String json = """
         {
+          "sku": "LAP-001",
           "name": "Laptop",
+          "category": "Electronics",
           "description": "Test product",
           "price": 999.99,
           "stock": 10
@@ -34,6 +36,7 @@ class ProductControllerBoundaryTest {
                         .content(json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.sku").value("LAP-001"))
                 .andExpect(jsonPath("$.name").value("Laptop"));
     }
 }
