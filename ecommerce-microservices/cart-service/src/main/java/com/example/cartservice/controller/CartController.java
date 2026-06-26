@@ -1,9 +1,9 @@
 package com.example.cartservice.controller;
 
 import com.example.cartservice.api.AddCartItemRequest;
-import com.example.cartservice.model.Cart;
-import com.example.cartservice.model.CartItem;
-import com.example.cartservice.repository.CartRepository;
+import com.example.cartservice.api.CartResponse;
+import com.example.cartservice.api.UpdateCartItemRequest;
+import com.example.cartservice.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,53 +15,43 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Cart", description = "Shopping cart APIs")
 public class CartController {
 
-    private final CartRepository cartRepository;
+    private final CartService cartService;
 
-    public CartController(CartRepository cartRepository) {
-        this.cartRepository = cartRepository;
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
     }
 
     @PostMapping("/{userId}/items")
     @Operation(summary = "Add item to a user's cart")
-    public ResponseEntity<Cart> addItem(@PathVariable String userId,
-                                        @Valid @RequestBody AddCartItemRequest request) {
-
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    Cart c = new Cart();
-                    c.setUserId(userId);
-                    return c;
-                });
-
-        CartItem item = new CartItem();
-        item.setProductId(request.getProductId());
-        item.setQuantity(request.getQuantity());
-        item.setCart(cart);
-
-        cart.getItems().add(item);
-
-        Cart saved = cartRepository.save(cart);
-        return ResponseEntity.ok(saved);
+    public CartResponse addItem(@PathVariable String userId,
+                                @Valid @RequestBody AddCartItemRequest request) {
+        return cartService.addItem(userId, request);
     }
 
     @GetMapping("/{userId}")
     @Operation(summary = "Get cart for a user")
-    public ResponseEntity<Cart> getCart(@PathVariable String userId) {
-        return cartRepository.findByUserId(userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public CartResponse getCart(@PathVariable String userId) {
+        return cartService.getCart(userId);
+    }
+
+    @PutMapping("/{userId}/items/{productId}")
+    @Operation(summary = "Update a cart item quantity")
+    public CartResponse updateItem(@PathVariable String userId,
+                                   @PathVariable Long productId,
+                                   @Valid @RequestBody UpdateCartItemRequest request) {
+        return cartService.updateItem(userId, productId, request);
+    }
+
+    @DeleteMapping("/{userId}/items/{productId}")
+    @Operation(summary = "Remove one item from a user's cart")
+    public CartResponse removeItem(@PathVariable String userId, @PathVariable Long productId) {
+        return cartService.removeItem(userId, productId);
     }
 
     @DeleteMapping("/{userId}/items")
     @Operation(summary = "Clear a user's cart")
     public ResponseEntity<Void> clearCart(@PathVariable String userId) {
-        Cart cart = cartRepository.findByUserId(userId).orElse(null);
-        if (cart == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        cart.getItems().clear();
-        cartRepository.save(cart);
+        cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
     }
 }
