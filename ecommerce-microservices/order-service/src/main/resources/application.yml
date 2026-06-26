@@ -42,6 +42,9 @@ management:
         include: health,info
 
 app:
+  services:
+    cart-service-url: http://cart-service:8082
+    product-service-url: http://product-service:8081
   kafka:
     topics:
       order-created: order-created
