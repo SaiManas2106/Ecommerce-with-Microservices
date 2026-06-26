@@ -1,4 +1,10 @@
 spring:
   cloud:
     gateway:
-      routes: []
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - StripPrefix=1

@@ -54,6 +54,16 @@ services:
     networks:
       - ecommerce-net
 
+  auth-service:
+    build: ./auth-service
+    depends_on:
+      - discovery-server
+      - config-server
+    ports:
+      - "8085:8085"
+    networks:
+      - ecommerce-net
+
   cart-service:
     build: ./cart-service
     depends_on:

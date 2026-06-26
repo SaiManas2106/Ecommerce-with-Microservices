@@ -1,0 +1,4 @@
+app:
+  auth:
+    token-secret: local-development-secret-change-me
+    token-ttl-seconds: 86400
