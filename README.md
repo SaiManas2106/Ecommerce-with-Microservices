@@ -1,102 +1,64 @@
+# E-Commerce Full Stack Microservices
 
-# E-Commerce Backend – Microservices with Kafka
+A full-stack ecommerce platform built with Spring Boot microservices, Kafka, service discovery, centralized configuration, and a React storefront. The project demonstrates real ecommerce workflows including customer authentication, product catalog management, product-backed carts, checkout, inventory reservation, asynchronous payment processing, idempotent event consumers, and retry/DLT handling.
 
-Backend for a simple e-commerce system built using a microservices architecture with:
+The application source lives in [`ecommerce-microservices`](ecommerce-microservices).
 
-- Java 17, Spring Boot 3
-- Spring Cloud (Eureka, Config Server, Gateway)
-- Apache Kafka for async messaging
-- H2 in-memory databases (per service)
-- Docker Compose for local orchestration
+## Highlights
 
-## Architecture
+- React + TypeScript storefront connected to the API Gateway
+- Customer registration and login through `auth-service`
+- Product catalog with SKU, category, status, and inventory APIs
+- Cart service that validates products, stores price snapshots, merges quantities, and calculates totals
+- Checkout flow that reserves inventory before publishing order events
+- Kafka-based order/payment workflow with correlation IDs, retries, DLT handlers, and idempotency
+- Eureka discovery, Config Server, API Gateway, Docker Compose, Swagger UI, and focused tests
 
-Services:
+## Services
 
-- `discovery-server` – Eureka service registry (`:8761`)
-- `config-server` – Centralized config (`:8888`)
-- `api-gateway` – Single entrypoint and routing (`:8080`)
-- `product-service` – Product catalog (`:8081`)
-- `cart-service` – User carts (`:8082`)
-- `order-service` – Order creation & status (`:8083`)
-- `payment-service` – Payment processing (`:8084`)
+- `auth-service` - customer identity, roles, signed bearer tokens
+- `product-service` - catalog, pricing, product status, inventory reservation/restock
+- `cart-service` - user cart, product validation, price snapshots, totals
+- `order-service` - checkout, inventory reservation, order lifecycle, Kafka order events
+- `payment-service` - payment records, Kafka payment events, idempotent processing
+- `api-gateway` - single external entrypoint
+- `config-server` - centralized configuration
+- `discovery-server` - Eureka registry
+- `frontend` - ecommerce storefront
 
-Async flow (Kafka):
-
-- `order-service` publishes **order-created** events
-- `payment-service` consumes them, processes payment, publishes **payment-completed**
-- `order-service` consumes **payment-completed** and updates order status
-
-Idempotency & reliability:
-
-- Both `order-service` and `payment-service` keep a `ProcessedEvent` table to ignore duplicate events
-- Simple retry loops around Kafka handlers
-- A scheduler cancels long-pending orders (timeout handling)
-
-## Tech Stack
-
-- **Backend:** Java 17, Spring Boot, Spring Web, Spring Data JPA, Validation
-- **Microservices:** Spring Cloud Eureka, Config, Gateway
-- **Messaging:** Apache Kafka (Spring Kafka)
-- **Database:** H2 (per service)
-- **Build:** Maven
-- **Containers:** Docker, Docker Compose
-- **Docs:** springdoc-openapi (Swagger UI on each HTTP service)
-
-## Getting Started
-
-### Prerequisites
-
-- Java 17
-- Maven 3.8+
-- Docker & Docker Compose
-
-### Build
-
-From project root:
+## Run Locally
 
 ```bash
-mvn clean package
-````
-
-### Run everything with Docker Compose
-
-```bash
+cd ecommerce-microservices
+mvn clean test
 docker compose up --build
 ```
 
-### Useful URLs
+Frontend only:
 
-* Eureka Dashboard: `http://localhost:8761`
-* API Gateway: `http://localhost:8080`
-* Product Service Swagger: `http://localhost:8081/swagger-ui/index.html`
-* Cart Service Swagger: `http://localhost:8082/swagger-ui/index.html`
-* Order Service Swagger: `http://localhost:8083/swagger-ui/index.html`
-* Payment Service Swagger: `http://localhost:8084/swagger-ui/index.html`
+```bash
+cd ecommerce-microservices/frontend
+npm install
+npm run build
+npm run dev
+```
 
-## Example Flow
+Useful URLs:
 
-1. Create a product:
+- Frontend: `http://localhost:5173`
+- API Gateway: `http://localhost:8080`
+- Eureka: `http://localhost:8761`
+- Auth Swagger: `http://localhost:8085/swagger-ui/index.html`
+- Product Swagger: `http://localhost:8081/swagger-ui/index.html`
+- Cart Swagger: `http://localhost:8082/swagger-ui/index.html`
+- Order Swagger: `http://localhost:8083/swagger-ui/index.html`
+- Payment Swagger: `http://localhost:8084/swagger-ui/index.html`
 
-   ```bash
-   POST http://localhost:8080/product-service/api/products
-   ```
+## Documentation
 
-2. Add product to a user’s cart:
+- [Application README](ecommerce-microservices/README.md)
+- [Architecture and checkout sequence](ecommerce-microservices/docs/architecture.md)
 
-   ```bash
-   POST http://localhost:8080/cart-service/api/cart/user123/items
-   ```
+## Portfolio Focus
 
-3. Create an order:
-
-   ```bash
-   POST http://localhost:8080/order-service/api/orders
-   ```
-
-4. Order is created as `PENDING`, Kafka triggers payment flow, and:
-
-   * `payment-service` processes payment
-   * `order-service` updates status to `COMPLETED`, `FAILED`, or `CANCELLED` (timeout)
-
-
+This repository is intended to show production-style backend thinking: service boundaries, authoritative pricing, inventory consistency, asynchronous workflows, idempotency, retry/DLT behavior, customer identity, typed frontend integration, Dockerized local orchestration, and tests around critical business rules.
